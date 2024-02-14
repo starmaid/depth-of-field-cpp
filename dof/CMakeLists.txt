@@ -27,7 +27,7 @@ if(WIN32)
         set(GLUT_LIBRARY_DIR "C:\\tools\\freeglut\\lib")
     endif()
 
-    set(PROJECT_BINARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/${Config}/dof/")       
+    set(PROJECT_BINARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/${Config}dof")       
     
     set(RS_INCLUDE_DIRS "C:\\Program Files (x86)\\Intel RealSense SDK 2.0\\include")  
     set(GLEW_INCLUDE_DIRS "C:\\tools\\glew-2.1.0\\include")
@@ -90,3 +90,10 @@ add_custom_command(TARGET dof POST_BUILD        #
 
 endif()
 
+
+message(STATUS "Copying modified shader files from ${PROJECT_SOURCE_DIR} to ${PROJECT_BINARY_OUTPUT_PATH}")
+# copy all the shaders to the shader folder
+add_custom_command(TARGET dof POST_BUILD        # Adds a post-build event to rs-getting-started
+    COMMAND ${CMAKE_COMMAND} -E copy_directory               # which executes "cmake - E copy_if_different..."
+        "${PROJECT_SOURCE_DIR}/dof/shaders"                            # <--this is in-file
+        "${PROJECT_BINARY_OUTPUT_PATH}/shaders")                 # <--this is out-file path

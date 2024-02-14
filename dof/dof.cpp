@@ -116,15 +116,15 @@ int main(int argc, char* argv[])
 	float       alpha = 0.5f;               // Transparancy coefficient
 	direction   dir = direction::to_color;  // Alignment direction
 
-	texture depth_image, color_image;     // Helpers for renderig images
-
+	texture depth_image, color_image;     // Helpers for rendering images
+	rs2::colorizer c = rs2::colorizer(3);   // Helper to colorize depth images. mode 3 means black-to-white
 
 	glViewport(0, 0, 800, 600);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	//Shader ourShader("shaders/a.vert", "shaders/a.frag");
 	Shader camShader("shaders/b.vert", "shaders/b.frag");
-
+	Shader modShader("shaders/c.vert", "shaders/c.frag");
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
@@ -153,9 +153,13 @@ int main(int argc, char* argv[])
 
 
 	// --------------------
-	camShader.use();
-	camShader.setInt("screenTexture", 0);
+	//camShader.use();
+	//camShader.setInt("screenTexture", 0);
 
+	modShader.use();
+	// set uniforms
+	modShader.setInt("colorTex", 0);
+	modShader.setInt("depthTex", 1);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -187,30 +191,29 @@ int main(int argc, char* argv[])
 		// With the aligned frameset we proceed as usual
 		auto depth = frameset.get_depth_frame();
 		auto color = frameset.get_color_frame();
-		//auto colorized_depth = color.colorize(depth);
-
-		//if (dir == direction::to_depth)
-		//{
-		//	// When aligning to depth, first render depth image
-		//	// and then overlay color on top with transparancy
-		//	depth_image.render(depth, { 0, 0, SCR_WIDTH, SCR_HEIGHT });
-		//	color_image.render(color, { 0, 0, SCR_WIDTH, SCR_HEIGHT }, alpha);
-		//}
-		//else
-		//{
-		//	// When aligning to color, first render color image
-		//	// and then overlay depth image on top
-		//	color_image.render(color, { 0, 0, SCR_WIDTH, SCR_HEIGHT });
-		//	depth_image.render(depth, { 0, 0, SCR_WIDTH, SCR_HEIGHT }, 1 - alpha);
-		//}
+		auto colorized_depth = c.colorize(depth); //we need to colorize depth before we can render it???
 
 		
 		color_image.upload(color);
-		//depth_image.upload(depth);
-		
+		depth_image.upload(colorized_depth);
+
+		// Bind first texture 
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, color_image.get_gl_handle());
+
+		// Bind the second texture 
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, depth_image.get_gl_handle());
+		
+
 		glBindVertexArray(quadVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// Unbind textures
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

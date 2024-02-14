@@ -1,12 +1,13 @@
 #version 330 core
 out vec4 FragColor;
   
-in vec3 ourColor;
-in vec2 TexCoord;
+in vec2 TexCoords;
+in float focus;
 
-uniform sampler2D ourTexture;
+uniform sampler2D colorTex;
+uniform sampler2D depthTex;
 
 void main()
 {
-    FragColor = texture(ourTexture, TexCoord);
+    FragColor = texture(colorTex, TexCoords) - texture(depthTex, TexCoords);
 }
