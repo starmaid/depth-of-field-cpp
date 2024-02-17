@@ -58,3 +58,5 @@ https://learnopengl.com/In-Practice/2D-Game/Postprocessing
 Where you left off: 
 
 we are rendering to a texture and applying a shader to it. Now you need to make that texture something that isnt plain white
+
+

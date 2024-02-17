@@ -28,6 +28,9 @@ enum class direction
 	to_color
 };
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -36,7 +39,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void processInput(GLFWwindow* window)
 {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 }
 
@@ -56,12 +59,13 @@ int main(int argc, char* argv[])
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
 
 
-
+	int WIDTH = 848;
+	int HEIGHT = 480;
 
 
 	// ====================== start GL =============================
 
-	GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", NULL, NULL);
 
 	if (window == NULL)
 	{
@@ -102,8 +106,9 @@ int main(int argc, char* argv[])
 	rs2::config cfg;
 	if (!serial.empty())
 		cfg.enable_device(serial);
-	cfg.enable_stream(RS2_STREAM_DEPTH);
-	cfg.enable_stream(RS2_STREAM_COLOR);
+	cfg.enable_stream(RS2_STREAM_DEPTH, 848, 480, RS2_FORMAT_Z16, 15);
+	//cfg.enable_stream(RS2_STREAM_COLOR);
+	cfg.enable_stream(RS2_STREAM_COLOR, 848, 480, RS2_FORMAT_RGB8, 15);
 	pipe.start(cfg);
 
 	// Define two align objects. One will be used to align
@@ -119,7 +124,15 @@ int main(int argc, char* argv[])
 	texture depth_image, color_image;     // Helpers for rendering images
 	rs2::colorizer c = rs2::colorizer(3);   // Helper to colorize depth images. mode 3 means black-to-white
 
-	glViewport(0, 0, 800, 600);
+	rs2::decimation_filter dec_filter;
+	dec_filter.set_option(RS2_OPTION_FILTER_MAGNITUDE, 3);
+	rs2::hole_filling_filter hole_filter;
+	hole_filter.set_option(RS2_OPTION_HOLES_FILL, 1);
+
+
+
+
+	glViewport(0, 0, WIDTH, HEIGHT);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	//Shader ourShader("shaders/a.vert", "shaders/a.frag");
@@ -130,13 +143,12 @@ int main(int argc, char* argv[])
 	// ------------------------------------------------------------------
 	float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
 		// positions   // texCoords
-		-1.0f,  1.0f,  0.0f, 0.0f,
-		-1.0f, -1.0f,  0.0f, 1.0f,
-		 1.0f, -1.0f,  1.0f, 1.0f,
-
-		-1.0f,  1.0f,  0.0f, 0.0f,
-		 1.0f, -1.0f,  1.0f, 1.0f,
-		 1.0f,  1.0f,  1.0f, 0.0f
+		-0.8f,  0.8f,  0.0f, 0.0f,
+		-0.8f, -0.8f,  0.0f, 1.0f,
+		 0.8f, -0.8f,  1.0f, 1.0f,
+		-0.8f,  0.8f,  0.0f, 0.0f,
+		 0.8f, -0.8f,  1.0f, 1.0f,
+		 0.8f,  0.8f,  1.0f, 0.0f
 	};
     // screen quad VAO
     unsigned int quadVAO, quadVBO;
@@ -160,6 +172,7 @@ int main(int argc, char* argv[])
 	// set uniforms
 	modShader.setInt("colorTex", 0);
 	modShader.setInt("depthTex", 1);
+
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -190,6 +203,9 @@ int main(int argc, char* argv[])
 
 		// With the aligned frameset we proceed as usual
 		auto depth = frameset.get_depth_frame();
+		depth = dec_filter.process(depth);
+		depth = hole_filter.process(depth);
+
 		auto color = frameset.get_color_frame();
 		auto colorized_depth = c.colorize(depth); //we need to colorize depth before we can render it???
 
@@ -222,6 +238,8 @@ int main(int argc, char* argv[])
 		glfwPollEvents();
 	}
 
+	printf("\nCleaning up...\n");
+
 	glDeleteVertexArrays(1, &quadVAO);
 	glDeleteBuffers(1, &quadVBO);
 
@@ -229,6 +247,7 @@ int main(int argc, char* argv[])
 
 
 	return 0;
+	 
 }
 
 
