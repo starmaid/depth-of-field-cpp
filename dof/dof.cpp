@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
 	direction   dir = direction::to_color;  // Alignment direction
 
 	texture depth_image, color_image;     // Helpers for rendering images
-	rs2::colorizer c = rs2::colorizer(3);   // Helper to colorize depth images. mode 3 means black-to-white
+	rs2::colorizer c = rs2::colorizer(3);   // Helper to colorize depth images. 2 - WhiteToBlack 3 - BlackToWhite
 
 	rs2::decimation_filter dec_filter;
 	dec_filter.set_option(RS2_OPTION_FILTER_MAGNITUDE, 3);
@@ -134,10 +134,6 @@ int main(int argc, char* argv[])
 
 	glViewport(0, 0, WIDTH, HEIGHT);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-	//Shader ourShader("shaders/a.vert", "shaders/a.frag");
-	Shader camShader("shaders/b.vert", "shaders/b.frag");
-	Shader modShader("shaders/c.vert", "shaders/c.frag");
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
@@ -165,14 +161,26 @@ int main(int argc, char* argv[])
 
 
 	// --------------------
+	// 	//Shader ourShader("shaders/a.vert", "shaders/a.frag");
+	Shader camShader("shaders/b.vert", "shaders/b.frag");
+
 	//camShader.use();
 	//camShader.setInt("screenTexture", 0);
 
-	modShader.use();
-	// set uniforms
-	modShader.setInt("colorTex", 0);
-	modShader.setInt("depthTex", 1);
+	Shader cocShader("shaders/postp.vert", "shaders/coc.frag");
 
+	cocShader.use();
+	// set uniforms
+	cocShader.setInt("colorTex", 0);
+	cocShader.setInt("depthTex", 1);
+	cocShader.setFloat("_FocalPlaneDistance", 0.3f);
+	cocShader.setFloat("_FocusRange", 0.15f);
+
+
+
+	Shader blurShader("shaders/postp.vert", "shaders/blur.frag");
+	blurShader.setInt("colorTex", 0);
+	blurShader.setInt("cocTex", 1);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -209,6 +217,8 @@ int main(int argc, char* argv[])
 		auto color = frameset.get_color_frame();
 		auto colorized_depth = c.colorize(depth); //we need to colorize depth before we can render it???
 
+		// set the first shader
+		cocShader.use();
 		
 		color_image.upload(color);
 		depth_image.upload(colorized_depth);
@@ -220,10 +230,36 @@ int main(int argc, char* argv[])
 		// Bind the second texture 
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, depth_image.get_gl_handle());
-		
 
+		// Bind the current tris
 		glBindVertexArray(quadVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		
+		// second shader
+		//blurShader.use();
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// run shaders
+		// PS_MaxCoCX
+		// PS_MaxCoCY
+		// PS_BlurCoCX
+		// PS_BlurCoCY
+		// PS_NearBlurX
+		// PS_NearBlurY
+		// PS_FarBlurX
+		// PS_FarBlurY
+		// PS_NearBlurX2
+		// PS_NearBlurY2
+		// PS_FarBlurX2
+		// PS_FarBlurY2
+		// PS_BlendNearKernel
+		// PS_BlitPing
+		// PS_BlendFarKernel
+		// PS_BlitPing
+		// PS_Composite
+		// PS_BlitPing
+
 
 		// Unbind textures
 		glActiveTexture(GL_TEXTURE0);
