@@ -1,5 +1,7 @@
 # meta docs for c++ version of depth of field
 
+https://www.youtube.com/watch?v=-4uzyhbDFas
+
 I need to include some libraries
 
 https://github.com/opencv/opencv.git

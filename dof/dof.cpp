@@ -9,6 +9,9 @@
 //#include <GL/glut.h>
 #include <GLFW/glfw3.h>
 
+#include <gst/gst.h>
+#include <gst/rtsp-server/rtsp-server.h>
+
 #include "example-utils.hpp"
 #include "example.hpp"
 #include "shader_s.h"
@@ -108,7 +111,7 @@ int main(int argc, char* argv[])
 		cfg.enable_device(serial);
 	cfg.enable_stream(RS2_STREAM_DEPTH, 848, 480, RS2_FORMAT_Z16, 15);
 	//cfg.enable_stream(RS2_STREAM_COLOR);
-	cfg.enable_stream(RS2_STREAM_COLOR, 848, 480, RS2_FORMAT_RGB8, 15);
+	cfg.enable_stream(RS2_STREAM_COLOR, 0, 848, 480, RS2_FORMAT_RGB8, 15);
 	pipe.start(cfg);
 
 	// Define two align objects. One will be used to align
@@ -146,6 +149,15 @@ int main(int argc, char* argv[])
 		 0.8f, -0.8f,  1.0f, 1.0f,
 		 0.8f,  0.8f,  1.0f, 0.0f
 	};
+	//float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+	//	// positions   // texCoords
+	//	-1.0f,  1.0f,  0.0f, 0.0f,
+	//	-1.0f, -1.0f,  0.0f, 1.0f,
+	//	 1.0f, -1.0f,  1.0f, 1.0f,
+	//	-1.0f,  1.0f,  0.0f, 0.0f,
+	//	 1.0f, -1.0f,  1.0f, 1.0f,
+	//	 1.0f,  1.0f,  1.0f, 0.0f
+	//};
     // screen quad VAO
     unsigned int quadVAO, quadVBO;
     glGenVertexArrays(1, &quadVAO);
@@ -179,8 +191,35 @@ int main(int argc, char* argv[])
 
 
 	Shader blurShader("shaders/postp.vert", "shaders/blur.frag");
-	blurShader.setInt("colorTex", 0);
-	blurShader.setInt("cocTex", 1);
+	blurShader.setInt("colorTex", 2);
+	blurShader.setInt("cocTex", 3);
+
+
+
+	// framebuffer configuration
+	// -------------------------
+	unsigned int framebuffer;
+	glGenFramebuffers(1, &framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	// create a color attachment texture
+	unsigned int textureColorbuffer;
+	glGenTextures(1, &textureColorbuffer);
+	glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+	// create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
+	unsigned int rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT); // use a single renderbuffer object for both a depth AND stencil buffer.
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); // now actually attach it
+	// now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -216,12 +255,26 @@ int main(int argc, char* argv[])
 
 		auto color = frameset.get_color_frame();
 		auto colorized_depth = c.colorize(depth); //we need to colorize depth before we can render it???
-
-		// set the first shader
-		cocShader.use();
 		
 		color_image.upload(color);
 		depth_image.upload(colorized_depth);
+
+
+
+		// render
+		// ------
+		// bind to framebuffer and draw scene as we normally would to color texture 
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+		glEnable(GL_DEPTH_TEST); // enable depth testing (is disabled for rendering screen-space quad)
+		// make sure we clear the framebuffer's content
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// bind to framebuffer and draw scene as we normally would to color texture 
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+		glEnable(GL_DEPTH_TEST); // enable depth testing (is disabled for rendering screen-space quad)
+
+
 
 		// Bind first texture 
 		glActiveTexture(GL_TEXTURE0);
@@ -231,14 +284,23 @@ int main(int argc, char* argv[])
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, depth_image.get_gl_handle());
 
-		// Bind the current tris
-		glBindVertexArray(quadVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
 		
-		// second shader
-		//blurShader.use();
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glActiveTexture(GL_TEXTURE2);
+		glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
+		// Bind the current tris
+		// set the first shader
+		cocShader.use();
+
+
+		blurShader.use();
+
+		glBindVertexArray(quadVAO);
+		glBindTexture(GL_TEXTURE_2D, textureColorbuffer);	// use the color attachment texture as the texture of the quad plane
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		
 
 		// run shaders
 		// PS_MaxCoCX
@@ -278,6 +340,7 @@ int main(int argc, char* argv[])
 
 	glDeleteVertexArrays(1, &quadVAO);
 	glDeleteBuffers(1, &quadVBO);
+	glDeleteFramebuffers(1, &framebuffer);
 
 	glfwTerminate();
 
