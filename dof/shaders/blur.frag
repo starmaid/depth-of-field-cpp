@@ -28,7 +28,7 @@ void main()
 
     float kernel[9] = float[](
         1.0 / 16, 2.0 / 16, 1.0 / 16,
-        2.0 / 16, str / 16, 2.0 / 16,
+        2.0 / 16, 4.0 / 16, 2.0 / 16,
         1.0 / 16, 2.0 / 16, 1.0 / 16  
     );
 
@@ -45,7 +45,7 @@ void main()
     }
     vec3 col = vec3(0.0);
     for(int i = 0; i < 9; i++)
-        col += sampleTex[i] * kernel[i];
+        col += sampleTex[i] * kernel[i] * str;
     
     FragColor = vec4(col[0],col[1],col[2], 1.0);
 }  

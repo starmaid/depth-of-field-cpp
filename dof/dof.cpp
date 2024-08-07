@@ -320,7 +320,7 @@ int main(int argc, char* argv[])
 		glBindTexture(GL_TEXTURE_2D, depth_image.get_gl_handle());
 
 		
-		glBindVertexArray(quadVAO);
+		glBindVertexArray(quadVAOFull);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 
@@ -336,7 +336,7 @@ int main(int argc, char* argv[])
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		
-		glBindVertexArray(quadVAO);
+		glBindVertexArray(quadVAOFull);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 
@@ -350,10 +350,8 @@ int main(int argc, char* argv[])
 		glActiveTexture(GL_TEXTURE4);
 		glBindTexture(GL_TEXTURE_2D, textureColorbuffer2);
 
-		
 
 		glBindVertexArray(quadVAO);
-		glBindTexture(GL_TEXTURE_2D, textureColorbuffer2);	// use the color attachment texture as the texture of the quad plane
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		
 

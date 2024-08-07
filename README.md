@@ -70,6 +70,8 @@ https://github.com/GarrettGunnell/AcerolaFX/blob/main/Shaders/AcerolaFX_BokehBlu
 
 left off:
 
+why is it flipping when i render to a framebuffer?
+
 ok we learned how to pass multiple tex to a shader, and are blurring the whole image now
 
 we need to create two blurred images, near and far coc
