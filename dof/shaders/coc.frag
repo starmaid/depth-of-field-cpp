@@ -1,7 +1,7 @@
 #version 330 core
 in vec2 TexCoords;
 
-uniform sampler2D colorTex;
+//uniform sampler2D colorTex;
 uniform sampler2D depthTex;
 
 uniform float _FocalPlaneDistance;

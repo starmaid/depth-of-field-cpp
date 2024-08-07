@@ -62,3 +62,16 @@ Where you left off:
 The first shader is working right...now how do we do like 20 of them to get the full effect?
 
 also thoughts - HLSL cross compile?
+
+https://www.youtube.com/watch?v=v9x_50czf-4
+
+https://github.com/GarrettGunnell/AcerolaFX/blob/main/Shaders/AcerolaFX_BokehBlur.fx
+
+
+left off:
+
+ok we learned how to pass multiple tex to a shader, and are blurring the whole image now
+
+we need to create two blurred images, near and far coc
+
+and then make one last shader that blends between them and the in-focus image
