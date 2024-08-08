@@ -138,12 +138,12 @@ int main(int argc, char* argv[])
 	// ------------------------------------------------------------------
 	float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
 		// positions   // texCoords
-		-0.8f,  0.8f,  0.0f, 0.0f,
-		-0.8f, -0.8f,  0.0f, 1.0f,
-		 0.8f, -0.8f,  1.0f, 1.0f,
-		-0.8f,  0.8f,  0.0f, 0.0f,
-		 0.8f, -0.8f,  1.0f, 1.0f,
-		 0.8f,  0.8f,  1.0f, 0.0f
+		-0.8f,  0.8f,  0.0f, 1.0f,
+		-0.8f, -0.8f,  0.0f, 0.0f,
+		 0.8f, -0.8f,  1.0f, 0.0f,
+		-0.8f,  0.8f,  0.0f, 1.0f,
+		 0.8f, -0.8f,  1.0f, 0.0f,
+		 0.8f,  0.8f,  1.0f, 1.0f
 	};
 	
     
@@ -162,14 +162,15 @@ int main(int argc, char* argv[])
 
 
 	float quadVerticesFull[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
-		// positions   // texCoords
-		-1.0f,  1.0f,  0.0f, 0.0f,
-		-1.0f, -1.0f,  0.0f, 1.0f,
-		 1.0f, -1.0f,  1.0f, 1.0f,
-		-1.0f,  1.0f,  0.0f, 0.0f,
-		 1.0f, -1.0f,  1.0f, 1.0f,
-		 1.0f,  1.0f,  1.0f, 0.0f
-	};
+			// positions   // texCoords
+			-1.0f,  1.0f,  0.0f, 1.0f,
+			-1.0f, -1.0f,  0.0f, 0.0f,
+			 1.0f, -1.0f,  1.0f, 0.0f,
+
+			-1.0f,  1.0f,  0.0f, 1.0f,
+			 1.0f, -1.0f,  1.0f, 0.0f,
+			 1.0f,  1.0f,  1.0f, 1.0f
+		};
 	// screen quad VAO
 	unsigned int quadVAOFull, quadVBOFull;
 	glGenVertexArrays(1, &quadVAOFull);
@@ -177,6 +178,29 @@ int main(int argc, char* argv[])
 	glBindVertexArray(quadVAOFull);
 	glBindBuffer(GL_ARRAY_BUFFER, quadVBOFull);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVerticesFull), &quadVerticesFull, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+
+	float quadVerticesFullFlipped[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+		// positions   // texCoords
+		-1.0f,  1.0f,  0.0f, 0.0f,
+		-1.0f, -1.0f,  0.0f, 1.0f,
+		 1.0f, -1.0f,  1.0f, 1.0f,
+
+		-1.0f,  1.0f,  0.0f, 0.0f,
+		 1.0f, -1.0f,  1.0f, 1.0f,
+		 1.0f,  1.0f,  1.0f, 0.0f
+	};
+	// screen quad VAO
+	unsigned int quadVAOFullFlipped, quadVBOFullFlipped;
+	glGenVertexArrays(1, &quadVAOFullFlipped);
+	glGenBuffers(1, &quadVBOFullFlipped);
+	glBindVertexArray(quadVAOFullFlipped);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBOFullFlipped);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVerticesFullFlipped), &quadVerticesFullFlipped, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
@@ -324,7 +348,7 @@ int main(int argc, char* argv[])
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 
-
+		
 		blurShader.use();
 		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
@@ -351,7 +375,8 @@ int main(int argc, char* argv[])
 		glBindTexture(GL_TEXTURE_2D, textureColorbuffer2);
 
 
-		glBindVertexArray(quadVAO);
+		// flip everything at the very end
+		glBindVertexArray(quadVAOFullFlipped);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		
 
@@ -375,7 +400,7 @@ int main(int argc, char* argv[])
 		// PS_Composite
 		// PS_BlitPing
 
-
+		
 		// Unbind textures
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, 0);

@@ -71,6 +71,7 @@ https://github.com/GarrettGunnell/AcerolaFX/blob/main/Shaders/AcerolaFX_BokehBlu
 left off:
 
 why is it flipping when i render to a framebuffer?
+- solved, the realsense images are flipped and i was flipping them myself with the quads
 
 ok we learned how to pass multiple tex to a shader, and are blurring the whole image now
 
