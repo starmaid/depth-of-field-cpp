@@ -220,8 +220,8 @@ int main(int argc, char* argv[])
 	// set uniforms
 	cocShader.setInt("colorTex", 0);
 	cocShader.setInt("depthTex", 1);
-	cocShader.setFloat("_FocalPlaneDistance", 0.3f);
-	cocShader.setFloat("_FocusRange", 0.15f);
+	cocShader.setFloat("_FocalPlaneDistance", 0.4f);
+	cocShader.setFloat("_FocusRange", 0.3f);
 
 
 
