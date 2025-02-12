@@ -1,5 +1,7 @@
 # meta docs for c++ version of depth of field
 
+![](depth_demo.gif)
+
 https://www.youtube.com/watch?v=-4uzyhbDFas
 
 I need to include some libraries

@@ -25,6 +25,9 @@ using namespace std;
 const unsigned int SCR_WIDTH = 848;
 const unsigned int SCR_HEIGHT = 480;
 
+float shader_focalplanedistance = 0.4f;
+float shader_focusrange = 0.3f;
+
 enum class direction
 {
 	to_depth,
@@ -44,6 +47,14 @@ void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+	else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		shader_focalplanedistance += 0.05f;
+	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		shader_focalplanedistance -= 0.05f;
+	else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+		shader_focusrange += 0.05f;
+	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		shader_focusrange -= 0.05f;
 }
 
 
@@ -220,8 +231,11 @@ int main(int argc, char* argv[])
 	// set uniforms
 	cocShader.setInt("colorTex", 0);
 	cocShader.setInt("depthTex", 1);
-	cocShader.setFloat("_FocalPlaneDistance", 0.4f);
-	cocShader.setFloat("_FocusRange", 0.3f);
+	//cocShader.setFloat("_FocalPlaneDistance", 0.4f);
+	//cocShader.setFloat("_FocusRange", 0.3f);
+	cocShader.setFloat("_FocalPlaneDistance", shader_focalplanedistance);
+	cocShader.setFloat("_FocusRange", shader_focusrange);
+	
 
 
 
@@ -287,6 +301,8 @@ int main(int argc, char* argv[])
 		// -----
 		processInput(window);
 
+		
+
 		// render
 		// ------
 
@@ -327,6 +343,10 @@ int main(int argc, char* argv[])
 		// 
 		// set the first shader
 		cocShader.use();
+		cocShader.setFloat("_FocalPlaneDistance", shader_focalplanedistance);
+		cocShader.setFloat("_FocusRange", shader_focusrange);
+
+		printf("plane: %f, range: %f\n", shader_focalplanedistance, shader_focusrange);
 		// bind to framebuffer and draw scene as we normally would to color texture 
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 		glEnable(GL_DEPTH_TEST); // enable depth testing (is disabled for rendering screen-space quad)
@@ -378,27 +398,6 @@ int main(int argc, char* argv[])
 		// flip everything at the very end
 		glBindVertexArray(quadVAOFullFlipped);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-		
-
-		// run shaders
-		// PS_MaxCoCX
-		// PS_MaxCoCY
-		// PS_BlurCoCX
-		// PS_BlurCoCY
-		// PS_NearBlurX
-		// PS_NearBlurY
-		// PS_FarBlurX
-		// PS_FarBlurY
-		// PS_NearBlurX2
-		// PS_NearBlurY2
-		// PS_FarBlurX2
-		// PS_FarBlurY2
-		// PS_BlendNearKernel
-		// PS_BlitPing
-		// PS_BlendFarKernel
-		// PS_BlitPing
-		// PS_Composite
-		// PS_BlitPing
 
 		
 		// Unbind textures

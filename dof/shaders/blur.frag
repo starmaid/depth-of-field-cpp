@@ -90,7 +90,7 @@ void main()
     }
     vec3 col = vec3(0.0);
     for(int i = 0; i < 25; i++)
-        col += sampleTex[i] * kernel[i] * str;
+        col += sampleTex[i] * kernel[i] * str * 0.8;
     
     // fill the rest of the color with the unblurred color
     col += vec3(texture(colorTex, TexCoords.xy)) * (1-str);
