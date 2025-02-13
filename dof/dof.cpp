@@ -27,6 +27,8 @@ const unsigned int SCR_HEIGHT = 480;
 
 float shader_focalplanedistance = 0.4f;
 float shader_focusrange = 0.3f;
+float shader_blurradius = 1.0f;
+
 
 enum class direction
 {
@@ -55,6 +57,10 @@ void processInput(GLFWwindow* window)
 		shader_focusrange += 0.05f;
 	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		shader_focusrange -= 0.05f;
+	else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+		shader_blurradius += 0.5f;
+	else if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+		shader_blurradius -= 0.5f;
 }
 
 
@@ -239,10 +245,13 @@ int main(int argc, char* argv[])
 
 
 
-	Shader blurShader("shaders/postp.vert", "shaders/blur.frag");
+	Shader blurShader("shaders/postp.vert", "shaders/blur2.frag");
 	blurShader.use();
 	blurShader.setInt("colorTex", 0);
 	blurShader.setInt("cocTex", 3);
+	// Get the uniform location in the shader
+	blurShader.setVec2("resolution", SCR_HEIGHT, SCR_WIDTH);
+	blurShader.setFloat("blur_radius", shader_blurradius);
 
 
 
@@ -370,6 +379,7 @@ int main(int argc, char* argv[])
 
 		
 		blurShader.use();
+		blurShader.setFloat("blur_radius", shader_blurradius);
 		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
 
