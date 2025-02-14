@@ -36,10 +36,10 @@ void main()
     if (depth >= 999.0f && _ConsiderSkyInfinity)
         farCOC = 1.0f;
 
-    if (nearCOC > 1f)
-        nearCOC = 1f;
-    if (farCOC > 1f)
-        farCOC = 1f;
+    if (nearCOC > 1.0f)
+        nearCOC = 1.0f;
+    if (farCOC > 1.0f)
+        farCOC = 1.0f;
 
     FragColor = vec4(nearCOC,farCOC,0,1);
 }
