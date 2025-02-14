@@ -2,6 +2,10 @@
 
 ![](depth_demo.gif)
 
+![](pen.gif)
+
+![](bed_static.gif)
+
 https://www.youtube.com/watch?v=-4uzyhbDFas
 
 I need to include some libraries
