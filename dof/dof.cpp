@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 
 	// ====================== start GL =============================
 
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Starmaid-DepthOfField", NULL, NULL);
 
 	if (window == NULL)
 	{
@@ -319,6 +319,8 @@ int main(int argc, char* argv[])
 		cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+
+	cout << "Press q in the OpenGL window to exit." << endl;
 
 	while (!glfwWindowShouldClose(window))
 	{
