@@ -3,7 +3,7 @@
 
 #pragma once
 #include <iostream>
-#include <opencv2/core.hpp>
+//#include <opencv2/core.hpp>
 #include <librealsense2/rs.hpp>
 #include <GL/glew.h>
 //#include <GL/glut.h>

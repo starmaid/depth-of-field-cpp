@@ -3,7 +3,7 @@
 
 
 #include "dof.h"
-#include <opencv2/core.hpp>
+//#include <opencv2/core.hpp>
 #include <librealsense2/rs.hpp>
 #include <GL/glew.h>
 //#include <GL/glut.h>
@@ -114,7 +114,8 @@ int main(int argc, char* argv[])
 		std::cerr << "Error: " << glewGetErrorString(err) << std::endl;
 	}
 
-	cout << "Built with CMAKE. OpenCV: " << cv::getVersionString()
+	cout << "Built with CMAKE." 
+		//<< "OpenCV: " << cv::getVersionString()
 		<< " Realsense: " << RS2_API_VERSION_STR
 		<< " GLEW: " << glewGetString(GLEW_VERSION)
 		<< endl;

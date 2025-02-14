@@ -2,7 +2,7 @@
 # project specific logic here.
 #
 
-find_package(OpenCV 4.9 REQUIRED)
+# find_package(OpenCV 4.9 REQUIRED)
 find_package(OpenGL REQUIRED)
 
 # Simple non robust way to find the librealsense library
@@ -56,7 +56,7 @@ include_directories(dof ${GLUT_INCLUDE_DIRS})
 add_executable (dof "dof.cpp" "dof.h" "example-utils.hpp" "shader_s.h" "stb_image.h" "example.hpp" "stb_easy_font.h")
 
 target_link_libraries(dof PRIVATE
-    ${OpenCV_LIBS}
+    #${OpenCV_LIBS}
     ${REALSENSE2_FOUND}
     ${GL_FOUND}
     ${GLFW_FOUND}
