@@ -19,7 +19,7 @@ void main()
     float farEnd = _FocalPlaneDistance + _FocusRange;
 
     float depth = texture(depthTex, TexCoords).r;
-    // 0.5 is about a meter?
+    // the depth is scaled from min to max like an infrared camera
 
     float nearCOC = 0.0f;
     if (depth < nearEnd)

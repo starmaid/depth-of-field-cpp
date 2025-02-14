@@ -22,11 +22,11 @@
 using namespace std;
 
 // settings
-const unsigned int SCR_WIDTH = 848;
-const unsigned int SCR_HEIGHT = 480;
+const unsigned int SCR_WIDTH = 1280; //848;
+const unsigned int SCR_HEIGHT = 720; //480;
 
 float shader_focalplanedistance = 0.4f;
-float shader_focusrange = 0.3f;
+float shader_focusrange = 0.31f;
 float shader_blurradius = 1.0f;
 
 
@@ -50,17 +50,32 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		shader_focalplanedistance += 0.05f;
+		shader_focalplanedistance += 0.02f;
 	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		shader_focalplanedistance -= 0.05f;
+		shader_focalplanedistance -= 0.02f;
 	else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-		shader_focusrange += 0.05f;
+		shader_focusrange += 0.02f;
 	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		shader_focusrange -= 0.05f;
+		shader_focusrange -= 0.02f;
 	else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 		shader_blurradius += 0.5f;
 	else if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
 		shader_blurradius -= 0.5f;
+
+	if (shader_focalplanedistance > 10)
+		shader_focalplanedistance = 10.0f;
+	else if (shader_focalplanedistance < 0)
+		shader_focalplanedistance = 0.0f;
+
+	if (shader_focusrange > 3)
+		shader_focusrange = 3.0f;
+	else if (shader_focusrange < 0.01f)
+		shader_focusrange = 0.01f;
+
+	if (shader_blurradius > 8)
+		shader_blurradius = 8.0f;
+	else if (shader_blurradius < 0)
+		shader_blurradius = 0.0f;
 }
 
 
@@ -122,9 +137,10 @@ int main(int argc, char* argv[])
 	rs2::config cfg;
 	if (!serial.empty())
 		cfg.enable_device(serial);
-	cfg.enable_stream(RS2_STREAM_DEPTH, 848, 480, RS2_FORMAT_Z16, 15);
-	//cfg.enable_stream(RS2_STREAM_COLOR);
-	cfg.enable_stream(RS2_STREAM_COLOR, 0, 848, 480, RS2_FORMAT_RGB8, 15);
+	cfg.enable_stream(RS2_STREAM_DEPTH, 1280, 720, RS2_FORMAT_Z16, 30);
+	cfg.enable_stream(RS2_STREAM_COLOR, 0, 1280, 720, RS2_FORMAT_RGB8, 30);
+	//cfg.enable_stream(RS2_STREAM_DEPTH, 848, 480, RS2_FORMAT_Z16, 15);
+	//cfg.enable_stream(RS2_STREAM_COLOR, 0, 848, 480, RS2_FORMAT_RGB8, 15);
 	pipe.start(cfg);
 
 	// Define two align objects. One will be used to align
@@ -355,7 +371,7 @@ int main(int argc, char* argv[])
 		cocShader.setFloat("_FocalPlaneDistance", shader_focalplanedistance);
 		cocShader.setFloat("_FocusRange", shader_focusrange);
 
-		printf("plane: %f, range: %f\n", shader_focalplanedistance, shader_focusrange);
+		//printf("plane: %f, range: %f\n", shader_focalplanedistance, shader_focusrange);
 		// bind to framebuffer and draw scene as we normally would to color texture 
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 		glEnable(GL_DEPTH_TEST); // enable depth testing (is disabled for rendering screen-space quad)
